@@ -27,7 +27,7 @@ public class Jabeja {
     this.round = 0;
     this.numberOfSwaps = 0;
     this.config = config;
-    this.T = config.getTemperature();
+    this.T = 1;// config.getTemperature();
   }
 
 
@@ -50,10 +50,17 @@ public class Jabeja {
    */
   private void saCoolDown(){
     // TODO for second task
-    if (T > 1)
-      T -= config.getDelta();
-    if (T < 1)
-      T = 1;
+    // if (T > 1)
+    //   T -= config.getDelta();
+    // if (T < 1)
+    //   T = 1;
+
+    float T_min = 0.00001f;
+    if(T > T_min){
+      T *= this.config.getAlpha();
+    }
+
+
   }
 
   /**
@@ -67,17 +74,25 @@ public class Jabeja {
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.LOCAL) {
       // swap with random neighbors
-      // TODO
+
+      partner = this.findPartner(nodeId, this.getNeighbors(nodep));
     }
 
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) {
       // if local policy fails then randomly sample the entire graph
-      // TODO
+      if(partner == null){
+        partner = this.findPartner(nodeId, this.getSample(nodeId));
+      }
     }
 
     // swap the colors
-    // TODO
+    if(partner != null){
+      int tmpColor = nodep.getColor();
+      nodep.setColor(partner.getColor());
+      partner.setColor(tmpColor);
+      this.numberOfSwaps++;
+    } 
   }
 
   public Node findPartner(int nodeId, Integer[] nodes){
@@ -87,7 +102,29 @@ public class Jabeja {
     Node bestPartner = null;
     double highestBenefit = 0;
 
-    // TODO
+    for(int i: nodes){
+      Node nodeq = entireGraph.get(i);
+      int dpp = this.getDegree(nodep, nodep.getColor());
+      int dqq = this.getDegree(nodeq, nodeq.getColor());
+
+      int old =(int) Math.pow(dpp, this.config.getAlpha()) + (int)Math.pow(dqq, this.config.getAlpha());
+
+      int dpq = this.getDegree(nodep, nodeq.getColor());
+      int dqp = this.getDegree(nodeq, nodep.getColor());
+
+      int neew = (int) Math.pow(dpq, this.config.getAlpha()) + (int) Math.pow(dqp, this.config.getAlpha());
+
+      // if((neew*this.T > old) && (neew > highestBenefit)){
+      //   bestPartner = nodeq;
+      //   highestBenefit = neew;
+      // }
+      double a = Math.exp((neew - old)/T);
+      Random rand = new Random();
+      if (a > rand.nextDouble()){
+        bestPartner = nodeq;
+        highestBenefit = neew;
+      }
+    } 
 
     return bestPartner;
   }
