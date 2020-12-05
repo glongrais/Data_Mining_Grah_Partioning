@@ -27,7 +27,8 @@ public class Jabeja {
     this.round = 0;
     this.numberOfSwaps = 0;
     this.config = config;
-    this.T = 1;// config.getTemperature();
+    this.T = config.getTemperature();
+    this.config.setDelta(0.01f);
   }
 
 
@@ -36,6 +37,10 @@ public class Jabeja {
     for (round = 0; round < config.getRounds(); round++) {
       for (int id : entireGraph.keySet()) {
         sampleAndSwap(id);
+      }
+
+      if(round==400){
+        this.T =  config.getTemperature();
       }
 
       //one cycle for all nodes have completed.
@@ -50,17 +55,17 @@ public class Jabeja {
    */
   private void saCoolDown(){
     // TODO for second task
-    // if (T > 1)
-    //   T -= config.getDelta();
-    // if (T < 1)
-    //   T = 1;
+    if (T > 1)
+      T -= config.getDelta();
+    if (T < 1)
+      T = 1;
 
-    float T_min = 0.00001f;
-    if(T > T_min){
-      T *= this.config.getAlpha();
-    }
-
-
+    // float T_min = 0.001f;
+    // if(T > T_min){
+    //   T *= this.config.getAlpha();
+    // }else{
+    //   T = T_min;
+    // }
   }
 
   /**
@@ -107,22 +112,24 @@ public class Jabeja {
       int dpp = this.getDegree(nodep, nodep.getColor());
       int dqq = this.getDegree(nodeq, nodeq.getColor());
 
-      int old =(int) Math.pow(dpp, this.config.getAlpha()) + (int)Math.pow(dqq, this.config.getAlpha());
+      float old =(float) Math.pow(dpp, this.config.getAlpha()) + (float)Math.pow(dqq, this.config.getAlpha());
 
       int dpq = this.getDegree(nodep, nodeq.getColor());
       int dqp = this.getDegree(nodeq, nodep.getColor());
 
-      int neew = (int) Math.pow(dpq, this.config.getAlpha()) + (int) Math.pow(dqp, this.config.getAlpha());
+      float neew = (float) Math.pow(dpq, this.config.getAlpha()) + (float) Math.pow(dqp, this.config.getAlpha());
 
       // if((neew*this.T > old) && (neew > highestBenefit)){
       //   bestPartner = nodeq;
       //   highestBenefit = neew;
       // }
       double a = Math.exp((neew - old)/T);
-      Random rand = new Random();
-      if (a > rand.nextDouble()){
+      if (a > Math.random()){
         bestPartner = nodeq;
         highestBenefit = neew;
+
+      }else{
+        System.out.println(a);
       }
     } 
 
