@@ -28,20 +28,25 @@ public class Jabeja {
     this.numberOfSwaps = 0;
     this.config = config;
     this.T = config.getTemperature();
-    this.config.setDelta(0.01f);
   }
 
 
   //-------------------------------------------------------------------
   public void startJabeja() throws IOException {
+
+    float tmpT = T;
     for (round = 0; round < config.getRounds(); round++) {
       for (int id : entireGraph.keySet()) {
         sampleAndSwap(id);
       }
 
-      if(round==400){
+      // For tasks 2.2 and Bonus
+
+      if(round%(int)(2*tmpT/config.getDelta())==0){
         this.T =  config.getTemperature();
       }
+
+      // End tasks 2.2 and Bonus
 
       //one cycle for all nodes have completed.
       //reduce the temperature
@@ -54,18 +59,24 @@ public class Jabeja {
    * Simulated analealing cooling function
    */
   private void saCoolDown(){
-    // TODO for second task
+    // For tasks 1, 2.2 and bonus 
     if (T > 1)
       T -= config.getDelta();
     if (T < 1)
       T = 1;
+    
+    // End task 1, 2.2 and bonus 
 
-    // float T_min = 0.001f;
+    // For task 2.1
+
+    // float T_min = 0.000001f;
     // if(T > T_min){
-    //   T *= this.config.getAlpha();
+    //   T *= this.config.getDelta();
     // }else{
     //   T = T_min;
     // }
+
+    // End task 2.1
   }
 
   /**
@@ -119,19 +130,30 @@ public class Jabeja {
 
       float neew = (float) Math.pow(dpq, this.config.getAlpha()) + (float) Math.pow(dqp, this.config.getAlpha());
 
+      // For task 1
+
       // if((neew*this.T > old) && (neew > highestBenefit)){
       //   bestPartner = nodeq;
       //   highestBenefit = neew;
       // }
+
+      // End task 1
+      
+      // For task 2
+
       double a = Math.exp((neew - old)/T);
-      if (a > Math.random()){
+      
+      // For task 2 Bonus
+
+      //double a = Math.pow(2,((neew-old)-1)/T);
+
+      if (a > Math.random() && neew > highestBenefit && neew!=old){
         bestPartner = nodeq;
         highestBenefit = neew;
-
-      }else{
-        System.out.println(a);
       }
-    } 
+
+      // End task 2
+    }
 
     return bestPartner;
   }
